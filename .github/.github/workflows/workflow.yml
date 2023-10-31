@@ -1,0 +1,58 @@
+name: dotnet package
+
+on: [push]
+
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      # Checkout
+      - uses: actions/checkout@v3
+      # Get version from tag, or default to fake version
+      - name: Get tag version
+        id: get_version
+        run: |
+          if [[ $GITHUB_REF == "refs/tags/v"* ]]; then
+            echo "Found release tag"
+            VERSION=${GITHUB_REF/refs\/tags\/v}
+          else
+            echo "No release tag found"
+            VERSION="0.0.0.1"
+          fi
+          echo "Using version: $VERSION"
+          echo ::set-output name=VERSION::$VERSION
+          
+      # Docker login, QEMU, Buildx Setup
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+      - name: Login to DockerHub
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKER_HUB_USER }}
+          password: ${{ secrets.DOCKER_HUB_TOKEN }}
+          
+      # Linux amd64, musl C library (like Alpine)
+      - name: Docker Linux/amd64 musl-c
+        uses: docker/build-push-action@v3
+        with:
+          push: ${{ startsWith(github.ref, 'refs/tags/') }}
+          tags: tagoss/rescuttle:muslc,tagoss/rescuttle:muslc-${{ steps.get_version.outputs.VERSION }}
+          platforms: linux/amd64
+          build-args: TARGET=linux-musl-x64,VERSION=${{ steps.get_version.outputs.VERSION }}
+          
+      # Linux amd64 / Linux arm64
+      # builds sharing tags need to be in 1 github action step
+      # do not pass TARGET, let the Dockerfile/script determine this based on arch
+      # list an arches/platforms in platforms
+      - name: "Docker: linux/amd64, linux/arm64"
+        uses: docker/build-push-action@v3
+        with:
+          push: ${{ startsWith(github.ref, 'refs/tags/') }}
+          tags: tagoss/rescuttle:latest,tagoss/rescuttle:${{ steps.get_version.outputs.VERSION }}
+          platforms: linux/amd64,linux/arm64
+          build-args: VERSION=${{ steps.get_version.outputs.VERSION }}
+      
+      
