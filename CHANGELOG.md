@@ -10,6 +10,10 @@ All changed for unreleased and released changes for Flume will be tracked in thi
 ### Fixed:
 ### Chores:
 
+## v1.0.0
+### Chores:
+* Open Source Release (no code changes)
+
 ## v0.4.2
 ### Added:
 * More HTTP method options: Head, Options, Patch, Put, Delete
