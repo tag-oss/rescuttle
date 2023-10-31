@@ -1,0 +1,24 @@
+{
+  "StartupEndpoints": [
+    {
+      "Name": "A Custom Startup Poller",
+      "URI": "https://httpbin.org/get",
+      "MaxRetries": "99",
+      "OnFailure": "Ignore",
+      "Method": "get"
+    }
+  ],
+  "ShutdownEndpoints": [
+    {
+      "Name": "A Custom Shutdown Webhook",
+      "URI": "https://httpbin.org/post",
+      "MaxRetries": "-1",
+      "OnFailure": "Fail",
+      "Method": "post"
+    }
+  ],
+  "Istio":{
+    "Enabled": "true",
+    "OnStartupFailure": "fail"
+  }
+}
